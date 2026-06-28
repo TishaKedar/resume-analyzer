@@ -29,26 +29,33 @@ function App() {
   // 🚀 ANALYZE FUNCTION
   const handleAnalyze = async () => {
     try {
-      if (!resumeFile) return alert("Please upload resume");
-      if (!jobDescription.trim()) return alert("Please enter JD");
-
-      setLoading(true);
-
-      const resumeText = await extractTextFromPDF(resumeFile);
-
-      const response = await analyzeResume(resumeText, jobDescription);
-
-      let result = response.output;
-
-      if (typeof result === "string") {
-        result = JSON.parse(cleanJSON(result));
+      if (!resumeFile) {
+        alert("Please upload a resume.");
+        return;
       }
-
-      setAnalysis(result);
-
-    } catch (err) {
-      console.error(err);
-      alert("Analysis failed");
+  
+      if (!jobDescription.trim()) {
+        alert("Please enter the job description.");
+        return;
+      }
+  
+      setLoading(true);
+  
+      const resumeText = await extractTextFromPDF(resumeFile);
+  
+      const result = await analyzeResume(resumeText, jobDescription);
+  
+      // SAFE JSON HANDLING (FIXES PHONE ISSUE)
+      let parsedData = result;
+  
+      if (typeof result === "string") {
+        parsedData = JSON.parse(result);
+      }
+  
+      setAnalysis(parsedData);
+    } catch (error) {
+      console.error(error);
+      alert("Analysis failed. Please try again.");
     } finally {
       setLoading(false);
     }
